@@ -1,5 +1,6 @@
 package com.yanxing.networklibrary
 
+import com.yanxing.networklibrary.intercepter.ParameterInterceptor
 import com.yanxing.networklibrary.util.LogUtil
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -17,7 +18,7 @@ object RetrofitManage {
     @Synchronized fun init(baseUrl:String,log:Boolean){
         LogUtil.isDebug=log
         okHttpClientBuilder= getOkHttpClientBuilderTimeout()
-            //.addInterceptor()
+            .addInterceptor(ParameterInterceptor())
     }
 
     private fun getOkHttpClientBuilderTimeout(): OkHttpClient.Builder {
