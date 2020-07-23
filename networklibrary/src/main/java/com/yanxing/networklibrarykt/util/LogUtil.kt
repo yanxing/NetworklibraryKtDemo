@@ -1,4 +1,4 @@
-package com.yanxing.networklibrary.util
+package com.yanxing.networklibrarykt.util
 
 import android.util.Log
 
@@ -11,31 +11,31 @@ object LogUtil {
 
     fun v(tag:String,msg:String){
         if (isDebug){
-            print(1,tag,msg)
+            print(1, tag, msg)
         }
     }
 
     fun d(tag:String,msg:String){
         if (isDebug){
-            print(1,tag,msg)
+            print(1, tag, msg)
         }
     }
 
     fun i(tag:String,msg:String){
         if (isDebug){
-            print(1,tag,msg)
+            print(1, tag, msg)
         }
     }
 
     fun w(tag:String,msg:String){
         if (isDebug){
-            print(1,tag,msg)
+            print(1, tag, msg)
         }
     }
 
     fun e(tag:String,msg:String){
         if (isDebug){
-            print(1,tag,msg)
+            print(1, tag, msg)
         }
     }
 

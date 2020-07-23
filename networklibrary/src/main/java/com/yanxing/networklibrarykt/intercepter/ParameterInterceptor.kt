@@ -1,9 +1,8 @@
-package com.yanxing.networklibrary.intercepter
+package com.yanxing.networklibrarykt.intercepter
 
 import android.text.TextUtils
-import android.util.ArrayMap
-import com.yanxing.networklibrary.util.ErrorCodeUtil
-import com.yanxing.networklibrary.util.LogUtil
+import com.yanxing.networklibrarykt.util.ErrorCodeUtil
+import com.yanxing.networklibrarykt.util.LogUtil
 import okhttp3.FormBody
 import okhttp3.MultipartBody
 import okhttp3.Response
@@ -16,9 +15,9 @@ import okio.Buffer
 class ParameterInterceptor() : Interceptor {
 
     private val TAG = "networklibrary"
-    private var headers: ArrayMap<String, String>? = null
+    private var headers: Map<String, String>? = null
 
-    constructor(headers: ArrayMap<String, String>) : this() {
+    constructor(headers: Map<String, String>) : this() {
         this.headers = headers
     }
 
