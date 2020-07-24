@@ -1,8 +1,8 @@
 package com.yanxing.networklibrarykt.intercepter
 
 import android.text.TextUtils
-import com.yanxing.networklibrarykt.util.ErrorCodeUtil
 import com.yanxing.networklibrarykt.util.LogUtil
+import com.yanxing.networklibrarykt.util.getMessage
 import okhttp3.FormBody
 import okhttp3.MultipartBody
 import okhttp3.Response
@@ -87,7 +87,7 @@ class ParameterInterceptor() : Interceptor {
             val a = System.currentTimeMillis()
             var message = ""
             if (!response.isSuccessful) {
-                message = ErrorCodeUtil.getMessage(response.code())
+                message = getMessage(response.code())
             }
             val content = response.body()?.string()
             val headerParamStr =

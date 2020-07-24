@@ -3,6 +3,7 @@ package com.yanxing.networklibrarykt.util
 import android.accounts.NetworkErrorException
 import android.text.TextUtils
 import com.google.gson.JsonSyntaxException
+import com.yanxing.networklibrarykt.util.LogUtil.e
 import org.json.JSONException
 import java.io.IOException
 import java.net.ConnectException
@@ -38,26 +39,26 @@ private const val SSL_ERROR = "CA证书不信任"
  *
  * @param e
  */
-fun getException(e: Throwable): String? {
-    if (!TextUtils.isEmpty(e.message)) {
-        e(TAG, e.message!!)
+fun getException(exception: Throwable): String? {
+    if (!TextUtils.isEmpty(exception.message)) {
+        e(TAG, exception.message!!)
     }
-    return if (e is JSONException || e is JsonSyntaxException) {
+    return if (exception is JSONException || exception is JsonSyntaxException) {
         PARSE_JSON_FAIL
-    } else if (e is ConnectException
-        || e is NetworkErrorException
-        || e is UnknownHostException
+    } else if (exception is ConnectException
+        || exception is NetworkErrorException
+        || exception is UnknownHostException
     ) {
         NETWORK_ERROR
-    } else if (e is SocketTimeoutException) {
+    } else if (exception is SocketTimeoutException) {
         CONNET_SERVICE_TIME_OUT
-    } else if (e is SSLHandshakeException) {
+    } else if (exception is SSLHandshakeException) {
         SSL_ERROR
-    } else if (e is IOException) {
+    } else if (exception is IOException) {
         //unexpected end of stream on Connection 情况
         CONNECT_EXCEPTION
     } else {
-        e.message
+        exception.message
     }
 }
 

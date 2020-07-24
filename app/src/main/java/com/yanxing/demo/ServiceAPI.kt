@@ -1,7 +1,6 @@
 package com.yanxing.demo
 
 import com.yanxing.networklibrarykt.model.ResultModel
-import kotlinx.coroutines.Deferred
 import retrofit2.http.GET
 import retrofit2.http.Path
 

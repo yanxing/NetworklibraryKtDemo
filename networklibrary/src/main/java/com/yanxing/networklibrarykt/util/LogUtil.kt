@@ -17,25 +17,25 @@ object LogUtil {
 
     fun d(tag:String,msg:String){
         if (isDebug){
-            print(1, tag, msg)
+            print(2, tag, msg)
         }
     }
 
     fun i(tag:String,msg:String){
         if (isDebug){
-            print(1, tag, msg)
+            print(3, tag, msg)
         }
     }
 
     fun w(tag:String,msg:String){
         if (isDebug){
-            print(1, tag, msg)
+            print(4, tag, msg)
         }
     }
 
     fun e(tag:String,msg:String){
         if (isDebug){
-            print(1, tag, msg)
+            print(5, tag, msg)
         }
     }
 
@@ -56,7 +56,7 @@ object LogUtil {
         for (i in 0..msgTemp.length/maxLogSize){
             val start=i*maxLogSize
             var end=(i+1)*maxLogSize
-            end=Math.min(end,msg.length)
+            end=Math.min(end,msgTemp.length)
             when(key){
                 1->{
                     Log.v(tag,msgTemp.substring(start,end))
