@@ -3,11 +3,9 @@ package com.yanxing.demo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.ArrayMap
-import android.widget.Toast
-import com.yanxing.networklibrarykt.OnCallListener
 import com.yanxing.networklibrarykt.RetrofitManage
-import com.yanxing.networklibrarykt.model.ResultModel
-import com.yanxing.networklibrarykt.util.LogUtil
+import com.yanxing.networklibrarykt.SimpleAbstractObserver
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,19 +22,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         RetrofitManage.requestData({ serviceAPI.getWeather("上海") },
-            object : OnCallListener<Weather>() {
+            object : SimpleAbstractObserver<Weather>() {
                 override fun onCall(value: Weather) {
-                     LogUtil.d("结果",value.toString())
+                    content.text=value.toString()
                 }
             })
-
-
-        runCatching {
-
-        }.onSuccess {
-
-        }.onFailure {
-
-        }
     }
 }

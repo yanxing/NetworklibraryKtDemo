@@ -18,7 +18,6 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * @author 李双祥 on 2020/7/22.
@@ -112,7 +111,7 @@ object RetrofitManage {
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun <E> requestData(serviceAPIMethod: suspend () -> ResultModel<E>, listener: OnCallListener<E>) {
+    fun <E> requestData(serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
         MainScope().launch {
 
             flow {
@@ -121,18 +120,18 @@ object RetrofitManage {
                 //后续加showDialog()
             }.flowOn(Dispatchers.Main)
                 .onCompletion {
-                    listener.onComplete()
+                    observer.onComplete()
                     //后续加dismissDialog()
                 }.catch {
                     //后续加dismissDialog()
-                    listener.onError()
+                    observer.onError()
                 }.collect {
                     val result = it.invoke()
                     //业务成功
                     if (isSuccess(result.status) || isSuccess(result.code)) {
-                        result.data?.apply { listener.onCall(this) }
+                        result.data?.apply { observer.onCall(this) }
                     } else {
-                        result.data?.apply { listener.onFail() }
+                        result.data?.apply { observer.onFail() }
                         ToastUtil.showToast(
                             context,
                             if (TextUtils.isEmpty(result.msg)) result.message else result.msg
@@ -144,10 +143,16 @@ object RetrofitManage {
 
 }
 
-abstract class OnCallListener<T> {
+abstract class SimpleAbstractObserver<T> {
 
+    /**
+     * 接口状态码成功的情况下调用
+     */
     abstract fun onCall(value: T)
 
+    /**
+     * 接口状态码不成功情况下调用
+     */
     fun onFail() {}
 
     fun onError() {}
