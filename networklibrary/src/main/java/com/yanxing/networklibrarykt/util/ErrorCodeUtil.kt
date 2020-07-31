@@ -68,7 +68,7 @@ fun getException(exception: Throwable): String? {
  * @param code
  * @return
  */
-fun getMessage(code: Int): String {
+fun getMessage(code: Int?): String {
     return when (code) {
         NOT_FOUND -> ADDRESS_ERROR
         REQUEST_TIMEOUT -> TIME_OUT
@@ -85,6 +85,6 @@ fun getMessage(code: Int): String {
  * @param status
  * @return
  */
-fun isSuccess(status: String): Boolean {
+fun isSuccess(status: String?): Boolean {
     return SUCCESS_CODE.toString() == status || "success" == status
 }
