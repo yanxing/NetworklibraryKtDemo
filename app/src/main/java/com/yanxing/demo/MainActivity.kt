@@ -21,7 +21,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        RetrofitManage.requestData({ serviceAPI.getWeather("上海") },
+/*        RetrofitManage.requestData({ serviceAPI.getWeather("上海") },
+            object : SimpleAbstractObserver<Weather>() {
+                override fun onCall(value: Weather) {
+                    content.text=value.toString()
+                }
+            })*/
+
+        RetrofitManage.requestDataWithDialog({ serviceAPI.getWeather("上海") },supportFragmentManager,
             object : SimpleAbstractObserver<Weather>() {
                 override fun onCall(value: Weather) {
                     content.text=value.toString()
