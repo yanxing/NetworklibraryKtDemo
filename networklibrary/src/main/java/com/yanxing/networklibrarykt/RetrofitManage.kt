@@ -118,14 +118,10 @@ object RetrofitManage {
 
             flow {
                 emit(serviceAPIMethod)
-            }.onStart {
-                //后续加showDialog()
             }.flowOn(Dispatchers.Main)
                 .onCompletion {
                     observer.onComplete()
-                    //后续加dismissDialog()
                 }.catch {
-                    //后续加dismissDialog()
                     observer.onError()
                 }.collect {
                     val result = it.invoke()
