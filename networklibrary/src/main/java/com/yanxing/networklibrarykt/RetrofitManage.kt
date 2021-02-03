@@ -4,6 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewModelScope
 import com.yanxing.networklibrarykt.dialog.LoadDialog
 import com.yanxing.networklibrarykt.util.LogUtil
 import com.yanxing.networklibrarykt.intercepter.Interceptor
@@ -113,91 +117,22 @@ object RetrofitManage {
     }
 
 
-    fun <E> requestData(serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
-        MainScope().launch {
-
-            flow {
-                emit(serviceAPIMethod)
-            }.flowOn(Dispatchers.Main)
-                .onCompletion {
-                    observer.onComplete()
-                }.catch {
-                    observer.onError()
-                }.collect {
-                    val result = it.invoke()
-                    //业务成功
-                    if (isSuccess(result.status) || isSuccess(result.code)) {
-                        result.data?.apply { observer.onCall(this) }
-                    } else {
-                        result.data?.apply { observer.onFail() }
-                        ToastUtil.showToast(
-                            context,
-                            if (TextUtils.isEmpty(result.msg)) result.message else result.msg
-                        )
-                    }
-                }
-        }
+    fun <E> request(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
+                    , observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
+        netWorkViewModel.request(context,serviceAPIMethod,observer)
     }
 
-    fun <E> requestDataWithDialog(serviceAPIMethod: suspend () -> ResultModel<E>,fragmentManager: FragmentManager,toast: String
-                                  ,observer: SimpleAbstractObserver<E>) {
-        MainScope().launch {
-            flow {
-                emit(serviceAPIMethod)
-            }.onStart {
-                try {
-                    val fragment = fragmentManager.findFragmentByTag(LoadDialog.TAG)
-                    if (fragment == null) {
-                        val loadDialog = LoadDialog()
-                        if (!TextUtils.isEmpty(toast)) {
-                            val bundle = Bundle()
-                            bundle.putString("tip", toast)
-                            loadDialog.arguments = bundle
-                        }
-                        loadDialog.show(fragmentManager.beginTransaction(), LoadDialog.TAG)
-                    }
-                } catch (e: Exception) {
-                }
-            }.flowOn(Dispatchers.Main)
-                .onCompletion {
-                    observer.onComplete()
-                    try {
-                        val fragment = fragmentManager.findFragmentByTag(LoadDialog.TAG)
-                        fragment?.let {
-                            fragmentManager.beginTransaction().remove(fragment)
-                                .commitNowAllowingStateLoss()
-                        }
-                    } catch (e: Exception) {
-                    }
-                }.catch {
-                    observer.onError()
-                    try {
-                        val fragment = fragmentManager.findFragmentByTag(LoadDialog.TAG)
-                        fragment?.let {
-                            fragmentManager.beginTransaction().remove(fragment)
-                                .commitNowAllowingStateLoss()
-                        }
-                    } catch (e: Exception) {
-                    }
-                }.collect {
-                    val result = it.invoke()
-                    //业务成功
-                    if (isSuccess(result.status) || isSuccess(result.code)) {
-                        result.data?.apply { observer.onCall(this) }
-                    } else {
-                        result.data?.apply { observer.onFail() }
-                        ToastUtil.showToast(
-                            context,
-                            if (TextUtils.isEmpty(result.msg)) result.message else result.msg
-                        )
-                    }
-                }
-        }
+    fun <E> requestHasProgress(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
+                               ,fragmentManager: FragmentManager,toast: String,observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
+        netWorkViewModel.requestHasProgress(context,serviceAPIMethod,fragmentManager,toast,observer)
     }
 
-    fun <E> requestDataWithDialog(serviceAPIMethod: suspend () -> ResultModel<E>,fragmentManager: FragmentManager
-                                  ,observer: SimpleAbstractObserver<E>) {
-        requestDataWithDialog(serviceAPIMethod,fragmentManager,"努力加载中...",observer)
+    fun <E> requestHasProgress(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
+                               ,fragmentManager: FragmentManager,observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
+        netWorkViewModel.requestHasProgress(context,serviceAPIMethod,fragmentManager,"",observer)
     }
 
 }
