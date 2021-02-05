@@ -2,7 +2,7 @@
 
 请求示例
 ```kotlin
-RetrofitManage.requestData({ serviceAPI.getWeather("上海") },
+RetrofitManage.request(this,{ serviceAPI.getWeather("上海") },
     object : SimpleAbstractObserver<Weather>() {
         override fun onCall(value: Weather) {
                     
