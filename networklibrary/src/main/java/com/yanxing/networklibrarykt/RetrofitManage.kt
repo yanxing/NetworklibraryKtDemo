@@ -1,29 +1,16 @@
 package com.yanxing.networklibrarykt
 
-import android.content.Context
-import android.os.Bundle
-import android.text.TextUtils
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.ViewModel
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewModelScope
-import com.yanxing.networklibrarykt.dialog.LoadDialog
 import com.yanxing.networklibrarykt.util.LogUtil
 import com.yanxing.networklibrarykt.intercepter.Interceptor
 import com.yanxing.networklibrarykt.intercepter.ParameterInterceptor
 import com.yanxing.networklibrarykt.model.ResultModel
-import com.yanxing.networklibrarykt.util.ToastUtil
 import com.yanxing.networklibrarykt.util.createGson
-import com.yanxing.networklibrarykt.util.isSuccess
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.Exception
 import java.util.concurrent.TimeUnit
 
 /**
@@ -33,28 +20,19 @@ object RetrofitManage {
 
     private lateinit var retrofitBuilder: Retrofit.Builder
     private lateinit var okHttpClientBuilder: OkHttpClient.Builder
-    private lateinit var context: Context
 
     /**
      * 初始化retrofit
      * @param baseUrl
      * @param log true打印日志
      */
-    @Synchronized
-    fun init(context: Context, baseUrl: String, log: Boolean) {
+    fun init(baseUrl: String, log: Boolean) {
         okHttpClientBuilder = getOkHttpClientBuilderTimeout()
             .addInterceptor(ParameterInterceptor())
-        init(context, baseUrl, okHttpClientBuilder, log)
+        init(baseUrl, okHttpClientBuilder, log)
     }
 
-    @Synchronized
-    fun init(
-        context: Context,
-        baseUrl: String,
-        okHttpClientBuilder: OkHttpClient.Builder,
-        log: Boolean
-    ) {
-        this.context = context
+    fun init(baseUrl: String, okHttpClientBuilder: OkHttpClient.Builder, log: Boolean) {
         LogUtil.isDebug = log
         this.okHttpClientBuilder = okHttpClientBuilder
         retrofitBuilder = Retrofit.Builder()
@@ -63,11 +41,10 @@ object RetrofitManage {
             .client(okHttpClientBuilder.build())
     }
 
-    @Synchronized
-    fun init(context: Context, baseUrl: String, headers: Map<String, String>, log: Boolean) {
+    fun init(baseUrl: String, headers: Map<String, String>, log: Boolean) {
         okHttpClientBuilder = getOkHttpClientBuilderTimeout()
             .addInterceptor(ParameterInterceptor(headers))
-        init(context, baseUrl, okHttpClientBuilder, log)
+        init(baseUrl, okHttpClientBuilder, log)
     }
 
     /**
@@ -117,23 +94,48 @@ object RetrofitManage {
     }
 
 
-    fun <E> request(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
-                    , observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
-        netWorkViewModel.request(context,serviceAPIMethod,observer)
+    fun <E> request(fragmentActivity: FragmentActivity, serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel = ViewModelProvider(fragmentActivity).get(NetWorkViewModel::class.java)
+        netWorkViewModel.request(fragmentActivity, serviceAPIMethod, observer)
     }
 
-    fun <E> requestHasProgress(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
-                               ,fragmentManager: FragmentManager,toast: String,observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
-        netWorkViewModel.requestHasProgress(context,serviceAPIMethod,fragmentManager,toast,observer)
+    fun <E> request(fragment: Fragment, serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel = ViewModelProvider(fragment).get(NetWorkViewModel::class.java)
+        fragment.context?.let { netWorkViewModel.request(it, serviceAPIMethod, observer) }
     }
 
-    fun <E> requestHasProgress(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
-                               ,fragmentManager: FragmentManager,observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
-        netWorkViewModel.requestHasProgress(context,serviceAPIMethod,fragmentManager,"",observer)
+    /**
+     * 含有等待对话框
+     * @param serviceAPIMethod 请求挂起函数
+     * @param toast 提示文字
+     */
+    fun <E> requestDialog(fragmentActivity: FragmentActivity, serviceAPIMethod: suspend () -> ResultModel<E>, toast: String, observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel = ViewModelProvider(fragmentActivity).get(NetWorkViewModel::class.java)
+        netWorkViewModel.requestHasProgress(fragmentActivity, serviceAPIMethod, fragmentActivity.supportFragmentManager, toast, observer)
     }
+
+    fun <E> requestDialog(fragment: Fragment, serviceAPIMethod: suspend () -> ResultModel<E>, toast: String, observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel = ViewModelProvider(fragment).get(NetWorkViewModel::class.java)
+        fragment.context?.let {
+            netWorkViewModel.requestHasProgress(it, serviceAPIMethod, fragment.fragmentManager!!, toast, observer)
+        }
+    }
+
+    fun <E> requestDialog(fragmentActivity: FragmentActivity, serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel = ViewModelProvider(fragmentActivity).get(NetWorkViewModel::class.java)
+        netWorkViewModel.requestHasProgress(fragmentActivity, serviceAPIMethod, fragmentActivity.supportFragmentManager, "", observer)
+    }
+
+    fun <E> requestDialog(fragment: Fragment, serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
+        val netWorkViewModel = ViewModelProvider(fragment).get(NetWorkViewModel::class.java)
+        netWorkViewModel.requestHasProgress(fragment.context!!, serviceAPIMethod, fragment.fragmentManager!!, "", observer)
+    }
+
+//    fun <E> requestDialog(fragment: FragmentActivity, serviceAPIMethod: ResultModel<Any>) {
+//        val netWorkViewModel = ViewModelProvider(fragment).get(NetWorkViewModel::class.java)
+//        netWorkViewModel.requestHasProgress(fragment.context!!, serviceAPIMethod, fragment.fragmentManager!!, "", null)
+//    }
+
 
 }
 

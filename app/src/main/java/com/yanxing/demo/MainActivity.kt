@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
         val header = ArrayMap<String, String>()
         header["app_id"] = "oikqyppvlokrnkpq"
         header["app_secret"] = "YlpnRkR2TjhNRS9EU0ZKenFVNmllZz09"
-        RetrofitManage.init(this,"https://www.mxnzp.com/api/",header, true)
+        RetrofitManage.init("https://www.mxnzp.com/api/",header, true)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         viewModelStore.clear()
         val serviceAPI=RetrofitManage.getRetrofit().create(ServiceAPI::class.java)
-        RetrofitManage.requestHasProgress(this,{serviceAPI.getWeather("上海") },supportFragmentManager,
+        RetrofitManage.requestDialog(this,{serviceAPI.getWeather("上海") },
             object : SimpleAbstractObserver<Weather>() {
                 override fun onCall(value: Weather) {
                     content.text=value.toString()

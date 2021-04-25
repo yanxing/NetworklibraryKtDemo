@@ -99,9 +99,4 @@ class NetWorkViewModel:ViewModel(){
         }
     }
 
-    fun <E> requestHasProgress(context: Context,serviceAPIMethod: suspend () -> ResultModel<E>,fragmentManager: FragmentManager
-                                  ,observer: SimpleAbstractObserver<E>) {
-        requestHasProgress(context,serviceAPIMethod,fragmentManager,"努力加载中...",observer)
-    }
-
 }
