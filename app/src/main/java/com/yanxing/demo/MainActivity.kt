@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
         }, {
             //complete挂起函数，请求完成，可以不写此部分
         }, {
-                //collect挂起函数，ResultModel<T>数据，可以不写此部分
+            //collect挂起函数，ResultModel<T>数据，可以不写此部分
         })*/
 
         RetrofitManage.request(this, { serviceAPI.getWeather("上海") }, {
