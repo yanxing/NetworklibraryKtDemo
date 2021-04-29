@@ -10,7 +10,7 @@ import okhttp3.ResponseBody
 import okio.Buffer
 
 /**
- * @author 李双祥 on 2020/7/22.
+ * 拦截器.
  */
 class ParameterInterceptor() : Interceptor {
 

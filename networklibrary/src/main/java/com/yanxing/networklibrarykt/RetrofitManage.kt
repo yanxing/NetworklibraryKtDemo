@@ -3,6 +3,7 @@ package com.yanxing.networklibrarykt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.yanxing.networklibrarykt.util.LogUtil
 import com.yanxing.networklibrarykt.intercepter.Interceptor
 import com.yanxing.networklibrarykt.intercepter.ParameterInterceptor
@@ -93,65 +94,55 @@ object RetrofitManage {
             .writeTimeout(60L, TimeUnit.SECONDS)
     }
 
-
-    fun <E> request(fragmentActivity: FragmentActivity, serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel = ViewModelProvider(fragmentActivity).get(NetWorkViewModel::class.java)
-        netWorkViewModel.request(fragmentActivity, serviceAPIMethod, observer)
-    }
-
-    fun <E> request(fragment: Fragment, serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel = ViewModelProvider(fragment).get(NetWorkViewModel::class.java)
-        fragment.context?.let { netWorkViewModel.request(it, serviceAPIMethod, observer) }
+    /**
+     * 不带对话框的请求
+     * @param owner ViewModelStoreOwner
+     * @param serviceAPI 请求接口
+     * @param success 业务层面请求成功
+     * @param error 业务层面请求失败
+     * @param catch 异常
+     * @param complete 请求完成
+     */
+    fun <E> request(owner: ViewModelStoreOwner, serviceAPI: suspend () -> ResultModel<E>, success: suspend (data: E) -> Unit
+                    , error: suspend (message: String) -> Unit={}, catch: suspend (message: String?) -> Unit={}
+                    , complete: suspend () -> Unit={}) {
+        val requestViewModel = ViewModelProvider(owner).get(RequestViewModel::class.java)
+        requestViewModel.request(serviceAPI,success,error,catch,complete)
     }
 
     /**
-     * 含有等待对话框
-     * @param serviceAPIMethod 请求挂起函数
-     * @param toast 提示文字
+     * 带对话框的请求
+     * @param fragmentActivity
+     * @param serviceAPI 请求接口
+     * @param success 业务层面请求成功
+     * @param error 业务层面请求失败
+     * @param catch 异常
+     * @param complete 请求完成
      */
-    fun <E> requestDialog(fragmentActivity: FragmentActivity, serviceAPIMethod: suspend () -> ResultModel<E>, toast: String, observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel = ViewModelProvider(fragmentActivity).get(NetWorkViewModel::class.java)
-        netWorkViewModel.requestHasProgress(fragmentActivity, serviceAPIMethod, fragmentActivity.supportFragmentManager, toast, observer)
+    fun <E> requestDialog(fragmentActivity: FragmentActivity, serviceAPI: suspend () -> ResultModel<E>
+                          , success: suspend (data: E) -> Unit, error: suspend (message: String) -> Unit={}
+                          , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}) {
+        val netWorkViewModel = ViewModelProvider(fragmentActivity).get(RequestViewModel::class.java)
+        netWorkViewModel.requestHasProgress(serviceAPI, fragmentActivity.supportFragmentManager, "", success,error,catch,complete)
     }
 
-    fun <E> requestDialog(fragment: Fragment, serviceAPIMethod: suspend () -> ResultModel<E>, toast: String, observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel = ViewModelProvider(fragment).get(NetWorkViewModel::class.java)
+
+
+    /**
+     * 带对话框的请求
+     * @param fragment
+     * @param serviceAPI 请求接口
+     * @param success 业务层面请求成功
+     * @param error 业务层面请求失败
+     * @param catch 异常
+     * @param complete 请求完成
+     */
+    fun <E> requestDialog(fragment: Fragment, serviceAPI: suspend () -> ResultModel<E>
+                          , success: suspend (data: E) -> Unit, error: suspend (message: String) -> Unit={}
+                          , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}) {
+        val netWorkViewModel = ViewModelProvider(fragment).get(RequestViewModel::class.java)
         fragment.context?.let {
-            netWorkViewModel.requestHasProgress(it, serviceAPIMethod, fragment.fragmentManager!!, toast, observer)
+            netWorkViewModel.requestHasProgress(serviceAPI, fragment.fragmentManager!!, "", success,error,catch,complete)
         }
     }
-
-    fun <E> requestDialog(fragmentActivity: FragmentActivity, serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel = ViewModelProvider(fragmentActivity).get(NetWorkViewModel::class.java)
-        netWorkViewModel.requestHasProgress(fragmentActivity, serviceAPIMethod, fragmentActivity.supportFragmentManager, "", observer)
-    }
-
-    fun <E> requestDialog(fragment: Fragment, serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel = ViewModelProvider(fragment).get(NetWorkViewModel::class.java)
-        netWorkViewModel.requestHasProgress(fragment.context!!, serviceAPIMethod, fragment.fragmentManager!!, "", observer)
-    }
-
-//    fun <E> requestDialog(fragment: FragmentActivity, serviceAPIMethod: ResultModel<Any>) {
-//        val netWorkViewModel = ViewModelProvider(fragment).get(NetWorkViewModel::class.java)
-//        netWorkViewModel.requestHasProgress(fragment.context!!, serviceAPIMethod, fragment.fragmentManager!!, "", null)
-//    }
-
-
-}
-
-abstract class SimpleAbstractObserver<T> {
-
-    /**
-     * 接口状态码成功的情况下调用
-     */
-    abstract fun onCall(value: T)
-
-    /**
-     * 接口状态码不成功情况下调用
-     */
-    fun onFail() {}
-
-    fun onError() {}
-
-    fun onComplete() {}
 }
