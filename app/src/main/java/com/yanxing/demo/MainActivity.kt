@@ -19,15 +19,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val serviceAPI = RetrofitManage.getRetrofit().create(ServiceAPI::class.java)
-        /*RetrofitManage.request(this, { serviceAPI.getWeather("上海") }, {
-            //success挂起函数，业务层面成功，必写
+ /*       RetrofitManage.request(this, { serviceAPI.getWeather("上海") }, {
+            //success挂起函数，业务层面状态码成功data数据，必写
             content.text = it.toString()
         }, {
-            //error挂起函数，业务层面报错，可以不写此部分
+            //error挂起函数，业务层面状态码失败，可以不写此部分
         }, {
             //catch挂起函数，请求报错，可以不写此部分
         }, {
             //complete挂起函数，请求完成，可以不写此部分
+        }, {
+                //collect挂起函数，ResultModel<T>数据，可以不写此部分
         })*/
 
         RetrofitManage.request(this, { serviceAPI.getWeather("上海") }, {

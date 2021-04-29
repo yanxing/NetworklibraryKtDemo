@@ -21,14 +21,15 @@ class RequestViewModel : ViewModel() {
     /**
      * 不带对话框的请求
      * @param serviceAPI 请求接口
-     * @param success 业务层面请求成功
-     * @param error 业务层面请求失败
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
      * @param catch 异常
      * @param complete 请求完成
+     * @param collect ResultModel<T>数据
      */
-    fun <E> request(serviceAPI: suspend () -> ResultModel<E>, success: suspend (data: E) -> Unit
+    fun <T> request(serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T) -> Unit
                     , error: suspend (message: String) -> Unit, catch: suspend (message: String?) -> Unit
-                    , complete: suspend () -> Unit) {
+                    , complete: suspend () -> Unit,collect:suspend (ResultModel:ResultModel<T>)->Unit) {
         viewModelScope.launch {
             flow {
                 emit(serviceAPI)
@@ -39,6 +40,7 @@ class RequestViewModel : ViewModel() {
                     catch.invoke(it.message)
                 }.collect {
                     val result = it.invoke()
+                    collect.invoke(result)
                     //业务成功
                     if (isSuccess(result.status) || isSuccess(result.code)) {
                         result.data?.apply { success.invoke(this) }
@@ -53,14 +55,16 @@ class RequestViewModel : ViewModel() {
     /**
      * 带对话框的请求
      * @param serviceAPI 请求接口
-     * @param success 业务层面请求成功
-     * @param error 业务层面请求失败
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
      * @param catch 异常
      * @param complete 请求完成
+     * @param collect ResultModel<T>数据
      */
-    fun <E> requestHasProgress(serviceAPI: suspend () -> ResultModel<E>, fragmentManager: FragmentManager, toast: String,
-                               success: suspend (data: E) -> Unit, error: suspend (message: String) -> Unit
-                               , catch: suspend (message: String?) -> Unit, complete: suspend () -> Unit) {
+    fun <T> requestHasProgress(serviceAPI: suspend () -> ResultModel<T>, fragmentManager: FragmentManager, toast: String,
+                               success: suspend (data: T) -> Unit, error: suspend (message: String) -> Unit
+                               , catch: suspend (message: String?) -> Unit, complete: suspend () -> Unit
+                               ,collect:suspend (ResultModel:ResultModel<T>)->Unit) {
         viewModelScope.launch {
             flow {
                 emit(serviceAPI)
@@ -101,6 +105,7 @@ class RequestViewModel : ViewModel() {
                     }
                 }.collect {
                     val result = it.invoke()
+                    collect.invoke(result)
                     //业务成功
                     if (isSuccess(result.status) || isSuccess(result.code)) {
                         result.data?.apply { success.invoke(this) }

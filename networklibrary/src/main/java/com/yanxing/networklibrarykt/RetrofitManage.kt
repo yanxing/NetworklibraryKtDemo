@@ -98,32 +98,35 @@ object RetrofitManage {
      * 不带对话框的请求
      * @param owner ViewModelStoreOwner
      * @param serviceAPI 请求接口
-     * @param success 业务层面请求成功
-     * @param error 业务层面请求失败
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
      * @param catch 异常
      * @param complete 请求完成
+     * @param collect ResultModel<T>数据
      */
-    fun <E> request(owner: ViewModelStoreOwner, serviceAPI: suspend () -> ResultModel<E>, success: suspend (data: E) -> Unit
+    fun <T> request(owner: ViewModelStoreOwner, serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T) -> Unit
                     , error: suspend (message: String) -> Unit={}, catch: suspend (message: String?) -> Unit={}
-                    , complete: suspend () -> Unit={}) {
+                    , complete: suspend () -> Unit={}, collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
         val requestViewModel = ViewModelProvider(owner).get(RequestViewModel::class.java)
-        requestViewModel.request(serviceAPI,success,error,catch,complete)
+        requestViewModel.request(serviceAPI,success,error,catch,complete,collect)
     }
 
     /**
      * 带对话框的请求
      * @param fragmentActivity
      * @param serviceAPI 请求接口
-     * @param success 业务层面请求成功
-     * @param error 业务层面请求失败
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
      * @param catch 异常
      * @param complete 请求完成
+     * @param collect ResultModel<T>数据
      */
-    fun <E> requestDialog(fragmentActivity: FragmentActivity, serviceAPI: suspend () -> ResultModel<E>
-                          , success: suspend (data: E) -> Unit, error: suspend (message: String) -> Unit={}
-                          , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}) {
+    fun <T> requestDialog(fragmentActivity: FragmentActivity, serviceAPI: suspend () -> ResultModel<T>
+                          , success: suspend (data: T) -> Unit, error: suspend (message: String) -> Unit={}
+                          , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}
+                          , collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
         val netWorkViewModel = ViewModelProvider(fragmentActivity).get(RequestViewModel::class.java)
-        netWorkViewModel.requestHasProgress(serviceAPI, fragmentActivity.supportFragmentManager, "", success,error,catch,complete)
+        netWorkViewModel.requestHasProgress(serviceAPI, fragmentActivity.supportFragmentManager, "", success,error,catch,complete,collect)
     }
 
 
@@ -132,17 +135,19 @@ object RetrofitManage {
      * 带对话框的请求
      * @param fragment
      * @param serviceAPI 请求接口
-     * @param success 业务层面请求成功
-     * @param error 业务层面请求失败
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
      * @param catch 异常
      * @param complete 请求完成
+     * @param collect ResultModel<T>数据
      */
-    fun <E> requestDialog(fragment: Fragment, serviceAPI: suspend () -> ResultModel<E>
-                          , success: suspend (data: E) -> Unit, error: suspend (message: String) -> Unit={}
-                          , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}) {
+    fun <T> requestDialog(fragment: Fragment, serviceAPI: suspend () -> ResultModel<T>
+                          , success: suspend (data: T) -> Unit, error: suspend (message: String) -> Unit={}
+                          , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}
+                          , collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
         val netWorkViewModel = ViewModelProvider(fragment).get(RequestViewModel::class.java)
         fragment.context?.let {
-            netWorkViewModel.requestHasProgress(serviceAPI, fragment.fragmentManager!!, "", success,error,catch,complete)
+            netWorkViewModel.requestHasProgress(serviceAPI, fragment.fragmentManager!!, "", success,error,catch,complete,collect)
         }
     }
 }
