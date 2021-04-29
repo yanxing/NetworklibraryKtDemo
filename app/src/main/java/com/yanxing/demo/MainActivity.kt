@@ -23,11 +23,11 @@ class MainActivity : AppCompatActivity() {
             //success挂起函数，业务层面成功，必写
             content.text = it.toString()
         }, {
-            //error挂起函数，业务层面报错，可以不写
+            //error挂起函数，业务层面报错，可以不写此部分
         }, {
-            //catch挂起函数，请求报错，可以不写
+            //catch挂起函数，请求报错，可以不写此部分
         }, {
-            //complete挂起函数，请求完成，可以不写
+            //complete挂起函数，请求完成，可以不写此部分
         })*/
 
         RetrofitManage.request(this, { serviceAPI.getWeather("上海") }, {
