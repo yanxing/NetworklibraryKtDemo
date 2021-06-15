@@ -1,0 +1,56 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+
+group = "io.github.yanxing"
+archivesBaseName = "networklibrary-ktx"
+version = "1.0.0"
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment {
+                MavenDeployment deployment -> signing.signPom(deployment)
+            }
+
+            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'networklibrary-ktx'
+                packaging 'aar'
+                description 'kotlinx-coroutines+retrofit2 network package for android'
+                url 'https://github.com/yanxing/NetworklibraryKtDemo'
+
+                scm {
+                    connection 'scm:git:https://github.com/yanxing/NetworklibraryKtDemo.git'
+                    developerConnection 'scm:git:https://github.com/yanxing/NetworklibraryKtDemo.git'
+                    url 'https://github.com/yanxing/NetworklibraryKtDemo.git'
+                }
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'yanxing'
+                        name 'yanxing'
+                        email 'lyxtime@163.com'
+                    }
+                }
+            }
+        }
+    }
+}

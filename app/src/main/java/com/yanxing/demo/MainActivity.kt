@@ -3,8 +3,8 @@ package com.yanxing.demo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.ArrayMap
+import com.yanxing.demo.databinding.ActivityMainBinding
 import com.yanxing.networklibrarykt.RetrofitManage
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,7 +17,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        val viewBinding=ActivityMainBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
         val serviceAPI = RetrofitManage.getRetrofit().create(ServiceAPI::class.java)
  /*       RetrofitManage.request(this, { serviceAPI.getWeather("上海") }, {
             //success挂起函数，业务层面状态码成功data数据，必写
@@ -33,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         })*/
 
         RetrofitManage.request(this, { serviceAPI.getWeather("上海") }, {
-            content.text = it.toString()
+            viewBinding.content.text = it.toString()
         })
 
         //含有加载对话框
