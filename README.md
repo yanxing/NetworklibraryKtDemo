@@ -1,6 +1,6 @@
 # NetworklibraryKtDemo
 功能和[networklibrary](https://github.com/yanxing/NetworklibraryDemo) 一样。
-推荐这个，使用viewModelScope根据生命周期自动取消，不用修改基类处理rxjava可能导致的内存泄漏。
+使用viewModelScope根据生命周期自动取消，不用修改基类处理rxjava可能导致的内存泄漏。
 gradle接入，mavenCentral
 
 ```java
