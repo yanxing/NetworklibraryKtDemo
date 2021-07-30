@@ -68,9 +68,7 @@ object RetrofitManage {
         this.okHttpClientBuilder = okHttpClientBuilder
     }
 
-    fun getOkHttpClientBuilder(): OkHttpClient.Builder {
-        return this.okHttpClientBuilder
-    }
+    fun getOkHttpClientBuilder()= okHttpClientBuilder
 
     /**
      * 设置超时时间
@@ -83,16 +81,12 @@ object RetrofitManage {
         retrofitBuilder.client(okHttpClientBuilder.build())
     }
 
-    fun getRetrofit(): Retrofit {
-        return retrofitBuilder.build()
-    }
+    fun getRetrofit()=retrofitBuilder.build()
 
-    private fun getOkHttpClientBuilderTimeout(): OkHttpClient.Builder {
-        return OkHttpClient.Builder()
+    private fun getOkHttpClientBuilderTimeout()=OkHttpClient.Builder()
             .connectTimeout(60L, TimeUnit.SECONDS)
             .readTimeout(60L, TimeUnit.SECONDS)
             .writeTimeout(60L, TimeUnit.SECONDS)
-    }
 
     /**
      * 不带对话框的请求
