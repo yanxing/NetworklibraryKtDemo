@@ -1,7 +1,7 @@
 package com.yanxing.networklibrarykt
 
-import android.content.Context
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.yanxing.networklibrarykt.util.LogUtil
@@ -27,19 +27,13 @@ object RetrofitManage {
      * @param baseUrl
      * @param log true打印日志
      */
-    @Synchronized
     fun init(baseUrl: String, log: Boolean) {
         okHttpClientBuilder = getOkHttpClientBuilderTimeout()
             .addInterceptor(ParameterInterceptor())
-        init( baseUrl, okHttpClientBuilder, log)
+        init(baseUrl, okHttpClientBuilder, log)
     }
 
-    @Synchronized
-    fun init(
-        baseUrl: String,
-        okHttpClientBuilder: OkHttpClient.Builder,
-        log: Boolean
-    ) {
+    fun init(baseUrl: String, okHttpClientBuilder: OkHttpClient.Builder, log: Boolean) {
         LogUtil.isDebug = log
         this.okHttpClientBuilder = okHttpClientBuilder
         retrofitBuilder = Retrofit.Builder()
@@ -48,7 +42,6 @@ object RetrofitManage {
             .client(okHttpClientBuilder.build())
     }
 
-    @Synchronized
     fun init(baseUrl: String, headers: Map<String, String>, log: Boolean) {
         okHttpClientBuilder = getOkHttpClientBuilderTimeout()
             .addInterceptor(ParameterInterceptor(headers))
@@ -75,9 +68,7 @@ object RetrofitManage {
         this.okHttpClientBuilder = okHttpClientBuilder
     }
 
-    fun getOkHttpClientBuilder(): OkHttpClient.Builder {
-        return this.okHttpClientBuilder
-    }
+    fun getOkHttpClientBuilder()= okHttpClientBuilder
 
     /**
      * 设置超时时间
@@ -90,54 +81,67 @@ object RetrofitManage {
         retrofitBuilder.client(okHttpClientBuilder.build())
     }
 
-    fun getRetrofit(): Retrofit {
-        return retrofitBuilder.build()
-    }
+    fun getRetrofit()=retrofitBuilder.build()
 
-    private fun getOkHttpClientBuilderTimeout(): OkHttpClient.Builder {
-        return OkHttpClient.Builder()
-            .connectTimeout(60L, TimeUnit.SECONDS)
-            .readTimeout(60L, TimeUnit.SECONDS)
-            .writeTimeout(60L, TimeUnit.SECONDS)
-    }
-
-
-    fun <E> request(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
-                    , observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
-        netWorkViewModel.request(serviceAPIMethod,observer)
-    }
-
-    fun <E> requestHasProgress(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
-                               ,fragmentManager: FragmentManager,toast: String,observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
-        netWorkViewModel.requestHasProgress(serviceAPIMethod,fragmentManager,toast,observer)
-    }
-
-    fun <E> requestHasProgress(viewModelStoreOwner: ViewModelStoreOwner,serviceAPIMethod: suspend () -> ResultModel<E>
-                               ,fragmentManager: FragmentManager,observer: SimpleAbstractObserver<E>) {
-        val netWorkViewModel= ViewModelProvider(viewModelStoreOwner).get(NetWorkViewModel::class.java)
-        netWorkViewModel.requestHasProgress(serviceAPIMethod,fragmentManager,"",observer)
-    }
-
-}
-
-/**
- * context用于提示信息
- */
-abstract class SimpleAbstractObserver<T>(var context:Context?) {
+    private fun getOkHttpClientBuilderTimeout()=OkHttpClient.Builder()
+        .connectTimeout(60L, TimeUnit.SECONDS)
+        .readTimeout(60L, TimeUnit.SECONDS)
+        .writeTimeout(60L, TimeUnit.SECONDS)
 
     /**
-     * 接口状态码成功的情况下调用
+     * 不带对话框的请求
+     * @param owner ViewModelStoreOwner
+     * @param serviceAPI 请求接口
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
+     * @param catch 异常
+     * @param complete 请求完成
+     * @param collect ResultModel<T>数据
      */
-    abstract fun onCall(value: T)
+    fun <T> request(owner: ViewModelStoreOwner, serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T) -> Unit
+                    , error: suspend (message: String?) -> Unit={}, catch: suspend (message: String?) -> Unit={}
+                    , complete: suspend () -> Unit={}, collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
+        val requestViewModel = ViewModelProvider(owner).get(RequestViewModel::class.java)
+        requestViewModel.request(serviceAPI,success,error,catch,complete,collect)
+    }
 
     /**
-     * 接口状态码不成功情况下调用
+     * 带对话框的请求
+     * @param fragmentActivity
+     * @param serviceAPI 请求接口
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
+     * @param catch 异常
+     * @param complete 请求完成
+     * @param collect ResultModel<T>数据
      */
-    fun onFail() {}
+    fun <T> requestDialog(fragmentActivity: FragmentActivity, serviceAPI: suspend () -> ResultModel<T>
+                          , success: suspend (data: T) -> Unit, error: suspend (message: String?) -> Unit={}
+                          , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}
+                          , collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
+        val netWorkViewModel = ViewModelProvider(fragmentActivity).get(RequestViewModel::class.java)
+        netWorkViewModel.requestHasProgress(serviceAPI, fragmentActivity.supportFragmentManager, "", success,error,catch,complete,collect)
+    }
 
-    fun onError() {}
 
-    fun onComplete() {}
+
+    /**
+     * 带对话框的请求
+     * @param fragment
+     * @param serviceAPI 请求接口
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
+     * @param catch 异常
+     * @param complete 请求完成
+     * @param collect ResultModel<T>数据
+     */
+    fun <T> requestDialog(fragment: Fragment, serviceAPI: suspend () -> ResultModel<T>
+                          , success: suspend (data: T) -> Unit, error: suspend (message: String?) -> Unit={}
+                          , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}
+                          , collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
+        val netWorkViewModel = ViewModelProvider(fragment).get(RequestViewModel::class.java)
+        fragment.context?.let {
+            netWorkViewModel.requestHasProgress(serviceAPI, fragment.fragmentManager!!, "", success,error,catch,complete,collect)
+        }
+    }
 }

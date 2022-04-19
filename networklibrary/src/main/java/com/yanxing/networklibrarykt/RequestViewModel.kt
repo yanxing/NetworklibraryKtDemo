@@ -28,7 +28,7 @@ class RequestViewModel : ViewModel() {
      * @param collect ResultModel<T>数据
      */
     fun <T> request(serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T) -> Unit
-                    , error: suspend (message: String) -> Unit, catch: suspend (message: String?) -> Unit
+                    , error: suspend (message: String?) -> Unit, catch: suspend (message: String?) -> Unit
                     , complete: suspend () -> Unit,collect:suspend (ResultModel:ResultModel<T>)->Unit) {
         viewModelScope.launch {
             flow {
@@ -62,7 +62,7 @@ class RequestViewModel : ViewModel() {
      * @param collect ResultModel<T>数据
      */
     fun <T> requestHasProgress(serviceAPI: suspend () -> ResultModel<T>, fragmentManager: FragmentManager, toast: String,
-                               success: suspend (data: T) -> Unit, error: suspend (message: String) -> Unit
+                               success: suspend (data: T) -> Unit, error: suspend (message: String?) -> Unit
                                , catch: suspend (message: String?) -> Unit, complete: suspend () -> Unit
                                ,collect:suspend (ResultModel:ResultModel<T>)->Unit) {
         viewModelScope.launch {

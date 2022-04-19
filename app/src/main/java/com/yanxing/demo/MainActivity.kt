@@ -4,7 +4,6 @@ import android.util.ArrayMap
 import com.dianmei.baselibrary.BaseActivity
 import com.yanxing.demo.databinding.ActivityMainBinding
 import com.yanxing.networklibrarykt.RetrofitManage
-import com.yanxing.networklibrarykt.SimpleAbstractObserver
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
@@ -18,12 +17,18 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     override fun afterInstanceView() {
         viewModelStore.clear()
         val serviceAPI=RetrofitManage.getRetrofit().create(ServiceAPI::class.java)
-        RetrofitManage.requestHasProgress(this,{serviceAPI.getWeather("上海") },supportFragmentManager,
-            object : SimpleAbstractObserver<Weather>(this) {
-                override fun onCall(value: Weather) {
-                    binding.content.text=value.toString()
-                }
-            })
+        RetrofitManage.request(this, { serviceAPI.getWeather("上海") }, {
+            //success挂起函数，业务层面状态码成功data数据，必写
+            binding.content.text = it.toString()
+        }, {
+            //error挂起函数，业务层面状态码失败，可以不写此部分
+        }, {
+            //catch挂起函数，请求报错，可以不写此部分
+        }, {
+            //complete挂起函数，请求完成，可以不写此部分
+        }, {
+            //collect挂起函数，ResultModel<T>数据，可以不写此部分
+        })
     }
 
     override fun initBinding(): ActivityMainBinding {
