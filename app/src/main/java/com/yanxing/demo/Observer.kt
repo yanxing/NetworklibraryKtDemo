@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.FlowCollector
  * @author 李双祥 on 2020/7/30.
  */
 
-
 fun <E> AbstractObserver<E>.suspend(action:  () -> Unit): AbstractObserver<E> {
     return this
 }

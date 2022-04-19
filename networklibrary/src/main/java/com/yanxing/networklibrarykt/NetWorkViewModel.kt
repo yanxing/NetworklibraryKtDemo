@@ -1,6 +1,5 @@
 package com.yanxing.networklibrarykt
 
-import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.fragment.app.FragmentManager
@@ -20,7 +19,7 @@ import java.lang.Exception
  */
 class NetWorkViewModel:ViewModel(){
 
-    fun <E> request(context: Context,serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
+    fun <E> request(serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
         viewModelScope.launch {
             flow {
                 emit(serviceAPIMethod)
@@ -36,15 +35,16 @@ class NetWorkViewModel:ViewModel(){
                         result.data?.apply { observer.onCall(this) }
                     } else {
                         result.data?.apply { observer.onFail() }
-                        ToastUtil.showToast(context,
+                        observer.context?.let { ToastUtil.showToast(it,
                             if (TextUtils.isEmpty(result.msg)) result.message else result.msg
-                        )
+                        ) }
                     }
                 }
         }
     }
 
-    fun <E> requestHasProgress(context: Context,serviceAPIMethod: suspend () -> ResultModel<E>, fragmentManager: FragmentManager, toast: String
+    fun <E> requestHasProgress(serviceAPIMethod: suspend () -> ResultModel<E>, fragmentManager:
+    FragmentManager, toast: String
                                   , observer: SimpleAbstractObserver<E>) {
         viewModelScope.launch {
             flow {
@@ -91,17 +91,18 @@ class NetWorkViewModel:ViewModel(){
                         result.data?.apply { observer.onCall(this) }
                     } else {
                         result.data?.apply { observer.onFail() }
-                        ToastUtil.showToast(context,
+                        observer.context?.let { ToastUtil.showToast(it,
                             if (TextUtils.isEmpty(result.msg)) result.message else result.msg
-                        )
+                        ) }
+
                     }
                 }
         }
     }
 
-    fun <E> requestHasProgress(context: Context,serviceAPIMethod: suspend () -> ResultModel<E>,fragmentManager: FragmentManager
+    fun <E> requestHasProgress(serviceAPIMethod: suspend () -> ResultModel<E>,fragmentManager: FragmentManager
                                   ,observer: SimpleAbstractObserver<E>) {
-        requestHasProgress(context,serviceAPIMethod,fragmentManager,"努力加载中...",observer)
+        requestHasProgress(serviceAPIMethod,fragmentManager,"努力加载中...",observer)
     }
 
 }
