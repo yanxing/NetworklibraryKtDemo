@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yanxing.networklibrarykt.dialog.LoadDialog
 import com.yanxing.networklibrarykt.model.ResultModel
-import com.yanxing.networklibrarykt.util.ToastUtil
 import com.yanxing.networklibrarykt.util.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -17,38 +16,58 @@ import java.lang.Exception
 /**
  * @author 李双祥 on 2021/2/3.
  */
-class NetWorkViewModel:ViewModel(){
+class RequestViewModel : ViewModel() {
 
-    fun <E> request(serviceAPIMethod: suspend () -> ResultModel<E>, observer: SimpleAbstractObserver<E>) {
+    /**
+     * 不带对话框的请求
+     * @param serviceAPI 请求接口
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
+     * @param catch 异常
+     * @param complete 请求完成
+     * @param collect ResultModel<T>数据
+     */
+    fun <T> request(serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T) -> Unit
+                    , error: suspend (message: String) -> Unit, catch: suspend (message: String?) -> Unit
+                    , complete: suspend () -> Unit,collect:suspend (ResultModel:ResultModel<T>)->Unit) {
         viewModelScope.launch {
             flow {
-                emit(serviceAPIMethod)
+                emit(serviceAPI)
             }.flowOn(Dispatchers.Main)
                 .onCompletion {
-                    observer.onComplete()
+                    complete.invoke()
                 }.catch {
-                    observer.onError()
+                    catch.invoke(it.message)
                 }.collect {
                     val result = it.invoke()
+                    collect.invoke(result)
                     //业务成功
                     if (isSuccess(result.status) || isSuccess(result.code)) {
-                        result.data?.apply { observer.onCall(this) }
+                        result.data?.apply { success.invoke(this) }
                     } else {
-                        result.data?.apply { observer.onFail() }
-                        observer.context?.let { ToastUtil.showToast(it,
-                            if (TextUtils.isEmpty(result.msg)) result.message else result.msg
-                        ) }
+                        val msg = if (TextUtils.isEmpty(result.msg)) result.message else result.msg
+                        error.invoke(msg)
                     }
                 }
         }
     }
 
-    fun <E> requestHasProgress(serviceAPIMethod: suspend () -> ResultModel<E>, fragmentManager:
-    FragmentManager, toast: String
-                                  , observer: SimpleAbstractObserver<E>) {
+    /**
+     * 带对话框的请求
+     * @param serviceAPI 请求接口
+     * @param success 业务层面状态码成功
+     * @param error 业务层面状态码失败
+     * @param catch 异常
+     * @param complete 请求完成
+     * @param collect ResultModel<T>数据
+     */
+    fun <T> requestHasProgress(serviceAPI: suspend () -> ResultModel<T>, fragmentManager: FragmentManager, toast: String,
+                               success: suspend (data: T) -> Unit, error: suspend (message: String) -> Unit
+                               , catch: suspend (message: String?) -> Unit, complete: suspend () -> Unit
+                               ,collect:suspend (ResultModel:ResultModel<T>)->Unit) {
         viewModelScope.launch {
             flow {
-                emit(serviceAPIMethod)
+                emit(serviceAPI)
             }.onStart {
                 try {
                     val fragment = fragmentManager.findFragmentByTag(LoadDialog.TAG)
@@ -65,7 +84,7 @@ class NetWorkViewModel:ViewModel(){
                 }
             }.flowOn(Dispatchers.Main)
                 .onCompletion {
-                    observer.onComplete()
+                    complete.invoke()
                     try {
                         val fragment = fragmentManager.findFragmentByTag(LoadDialog.TAG)
                         fragment?.let {
@@ -75,7 +94,7 @@ class NetWorkViewModel:ViewModel(){
                     } catch (e: Exception) {
                     }
                 }.catch {
-                    observer.onError()
+                    catch.invoke(it.message)
                     try {
                         val fragment = fragmentManager.findFragmentByTag(LoadDialog.TAG)
                         fragment?.let {
@@ -86,23 +105,16 @@ class NetWorkViewModel:ViewModel(){
                     }
                 }.collect {
                     val result = it.invoke()
+                    collect.invoke(result)
                     //业务成功
                     if (isSuccess(result.status) || isSuccess(result.code)) {
-                        result.data?.apply { observer.onCall(this) }
+                        result.data?.apply { success.invoke(this) }
                     } else {
-                        result.data?.apply { observer.onFail() }
-                        observer.context?.let { ToastUtil.showToast(it,
-                            if (TextUtils.isEmpty(result.msg)) result.message else result.msg
-                        ) }
-
+                        val msg = if (TextUtils.isEmpty(result.msg)) result.message else result.msg
+                        error.invoke(msg)
                     }
                 }
         }
-    }
-
-    fun <E> requestHasProgress(serviceAPIMethod: suspend () -> ResultModel<E>,fragmentManager: FragmentManager
-                                  ,observer: SimpleAbstractObserver<E>) {
-        requestHasProgress(serviceAPIMethod,fragmentManager,"努力加载中...",observer)
     }
 
 }
