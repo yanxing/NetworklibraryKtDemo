@@ -15,16 +15,16 @@ import okio.Buffer
 class ParameterInterceptor() : Interceptor {
 
     private val TAG = "networklibrary"
-    private var headers: Map<String, String>? = null
+    private var mHeaders: Map<String, String>? = null
 
     constructor(headers: Map<String, String>) : this() {
-        this.headers = headers
+        this.mHeaders = headers
     }
 
     override fun intercept(chain: okhttp3.Interceptor.Chain): Response {
         val oldRequest = chain.request()
         val builder = oldRequest.newBuilder()
-        headers?.let {
+        mHeaders?.let {
             for (entry in it.entries) {
                 if (!TextUtils.isEmpty(entry.value)) {
                     builder.addHeader(entry.key, entry.value)
@@ -91,9 +91,9 @@ class ParameterInterceptor() : Interceptor {
             }
             val content = response.body()?.string()
             val headerParamStr =
-                if (TextUtils.isEmpty(headerParams)) "" else "  header参数$headerParams"
+                if (TextUtils.isEmpty(headerParams)) "  header参数为空" else "  header参数$headerParams"
             LogUtil.d(TAG,newRequest.url().url().toString() + "  请求参数:" + getParams.toString() + postParams.toString() + headerParamStr
-                        + "\n请求耗时：" + (a - b) + "ms，" + "请求结果\n" + content + "\n")
+                    + "\n请求耗时：" + (a - b) + "ms，" + "请求结果\n" + content + "\n")
 
             val body = ResponseBody.create(
                 if (newRequest.body() == null) null else newRequest.body()?.contentType(), content

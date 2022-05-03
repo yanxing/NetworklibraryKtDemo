@@ -3,6 +3,7 @@ package com.yanxing.networklibrarykt.util
 import android.accounts.NetworkErrorException
 import android.text.TextUtils
 import com.google.gson.JsonSyntaxException
+import com.yanxing.networklibrarykt.model.ResultModel
 import com.yanxing.networklibrarykt.util.LogUtil.e
 import org.json.JSONException
 import java.io.IOException
@@ -14,8 +15,6 @@ import javax.net.ssl.SSLHandshakeException
 /**
  * @author 李双祥 on 2020/7/22.
  */
-
-private const val SUCCESS_CODE = 1
 private const val TAG = "networklibrary"
 private const val PARSE_JSON_FAIL = "数据解析失败"
 private const val NETWORK_ERROR = "连接服务器异常，请检查网络或稍后再试"
@@ -36,13 +35,9 @@ private const val SSL_ERROR = "CA证书不信任"
 
 /**
  * 获取异常信息
- *
- * @param e
+ * @param exception
  */
-fun getException(exception: Throwable): String? {
-    if (!TextUtils.isEmpty(exception.message)) {
-        e(TAG, exception.message!!)
-    }
+fun getException(exception: Throwable): String {
     return if (exception is JSONException || exception is JsonSyntaxException) {
         PARSE_JSON_FAIL
     } else if (exception is ConnectException
@@ -58,15 +53,12 @@ fun getException(exception: Throwable): String? {
         //unexpected end of stream on Connection 情况
         CONNECT_EXCEPTION
     } else {
-        exception.message
+        exception.message?:""
     }
 }
 
 /**
- * 获取服务器错误代码代表的错误信息
- *
- * @param code
- * @return
+ * http层面失败请求吗
  */
 fun getMessage(code: Int?): String {
     return when (code) {
@@ -80,11 +72,30 @@ fun getMessage(code: Int?): String {
 }
 
 /**
- * 这里status为1或者success时，代表成功
- *
- * @param status
+ * 获取接口失败信息
+ */
+fun <T> getMessage(resultModel: ResultModel<T>): String {
+    return resultModel.message?:(resultModel.msg?:"")
+}
+
+/**
+ * 获取接口失败状态码
+ */
+fun <T> getCode(resultModel: ResultModel<T>): String {
+    return resultModel.code?:(resultModel.status?:"")
+}
+
+/**
+ * 接口成功
  * @return
  */
-fun isSuccess(status: String?): Boolean {
-    return SUCCESS_CODE.toString() == status || "success" == status
+fun  <T> isSuccess(resultModel: ResultModel<T>): Boolean {
+    return resultModel.status=="1"||resultModel.code=="1"
+}
+
+/**
+ * 获取接口成功的data数据
+ */
+fun  <T> getSuccessData(resultModel: ResultModel<T>): T? {
+    return resultModel.data
 }

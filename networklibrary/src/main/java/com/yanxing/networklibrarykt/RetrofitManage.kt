@@ -22,19 +22,32 @@ object RetrofitManage {
     private lateinit var retrofitBuilder: Retrofit.Builder
     private lateinit var okHttpClientBuilder: OkHttpClient.Builder
 
+    //业务错误信息全局回调
+    private var onObserver :((errorCode:String,errorMessage:String)->Unit)?=null
+
     /**
      * 初始化retrofit
      * @param baseUrl
      * @param log true打印日志
      */
-    fun init(baseUrl: String, log: Boolean) {
+    fun init(baseUrl: String, log: Boolean,onObserver:((errorCode:String,errorMessage:String)->Unit)?) {
         okHttpClientBuilder = getOkHttpClientBuilderTimeout()
             .addInterceptor(ParameterInterceptor())
-        init(baseUrl, okHttpClientBuilder, log)
+        init(baseUrl, okHttpClientBuilder, log,onObserver)
     }
 
-    fun init(baseUrl: String, okHttpClientBuilder: OkHttpClient.Builder, log: Boolean) {
+
+    fun init(baseUrl: String, headers: Map<String, String>, log: Boolean
+             ,onObserver: ((errorCode:String,errorMessage:String)->Unit)?) {
+        okHttpClientBuilder = getOkHttpClientBuilderTimeout()
+            .addInterceptor(ParameterInterceptor(headers))
+        init(baseUrl, okHttpClientBuilder, log,onObserver)
+    }
+
+    fun init(baseUrl: String, okHttpClientBuilder: OkHttpClient.Builder, log: Boolean
+             ,onObserver:((errorCode:String,errorMessage:String)->Unit)?) {
         LogUtil.isDebug = log
+        this.onObserver=onObserver
         this.okHttpClientBuilder = okHttpClientBuilder
         retrofitBuilder = Retrofit.Builder()
             .baseUrl(baseUrl)
@@ -42,11 +55,6 @@ object RetrofitManage {
             .client(okHttpClientBuilder.build())
     }
 
-    fun init(baseUrl: String, headers: Map<String, String>, log: Boolean) {
-        okHttpClientBuilder = getOkHttpClientBuilderTimeout()
-            .addInterceptor(ParameterInterceptor(headers))
-        init(baseUrl, okHttpClientBuilder, log)
-    }
 
     /**
      * 设置拦截器
@@ -98,11 +106,25 @@ object RetrofitManage {
      * @param complete 请求完成
      * @param collect ResultModel<T>数据
      */
-    fun <T> request(owner: ViewModelStoreOwner, serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T) -> Unit
-                    , error: suspend (message: String?) -> Unit={}, catch: suspend (message: String?) -> Unit={}
+    fun <T> request(owner: ViewModelStoreOwner, serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T?) -> Unit
+                    , error: suspend (message: String) -> Unit={}, catch: suspend (message: String?) -> Unit={}
                     , complete: suspend () -> Unit={}, collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
         val requestViewModel = ViewModelProvider(owner).get(RequestViewModel::class.java)
-        requestViewModel.request(serviceAPI,success,error,catch,complete,collect)
+        requestViewModel.request(serviceAPI,success,error,catch,complete,collect, onObserver)
+    }
+
+    fun <T> request(fragmentActivity: FragmentActivity, serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T?) -> Unit
+                    , error: suspend (message: String) -> Unit={}, catch: suspend (message: String?) -> Unit={}
+                    , complete: suspend () -> Unit={}, collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
+        val requestViewModel = ViewModelProvider(fragmentActivity).get(RequestViewModel::class.java)
+        requestViewModel.request(serviceAPI,success,error,catch,complete,collect, onObserver)
+    }
+
+    fun <T> request(fragment: Fragment, serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T?) -> Unit
+                    , error: suspend (message: String) -> Unit={}, catch: suspend (message: String?) -> Unit={}
+                    , complete: suspend () -> Unit={}, collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
+        val requestViewModel = ViewModelProvider(fragment).get(RequestViewModel::class.java)
+        requestViewModel.request(serviceAPI,success,error,catch,complete,collect, onObserver)
     }
 
     /**
@@ -116,11 +138,12 @@ object RetrofitManage {
      * @param collect ResultModel<T>数据
      */
     fun <T> requestDialog(fragmentActivity: FragmentActivity, serviceAPI: suspend () -> ResultModel<T>
-                          , success: suspend (data: T) -> Unit, error: suspend (message: String?) -> Unit={}
+                          , success: suspend (data: T?) -> Unit, error: suspend (message: String) -> Unit={}
                           , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}
                           , collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
         val netWorkViewModel = ViewModelProvider(fragmentActivity).get(RequestViewModel::class.java)
-        netWorkViewModel.requestHasProgress(serviceAPI, fragmentActivity.supportFragmentManager, "", success,error,catch,complete,collect)
+        netWorkViewModel.requestHasProgress(serviceAPI, fragmentActivity.supportFragmentManager, ""
+            , success,error,catch,complete,collect, onObserver)
     }
 
 
@@ -136,12 +159,13 @@ object RetrofitManage {
      * @param collect ResultModel<T>数据
      */
     fun <T> requestDialog(fragment: Fragment, serviceAPI: suspend () -> ResultModel<T>
-                          , success: suspend (data: T) -> Unit, error: suspend (message: String?) -> Unit={}
+                          , success: suspend (data: T?) -> Unit, error: suspend (message: String) -> Unit={}
                           , catch: suspend (message: String?) -> Unit={}, complete: suspend () -> Unit={}
                           , collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
         val netWorkViewModel = ViewModelProvider(fragment).get(RequestViewModel::class.java)
         fragment.context?.let {
-            netWorkViewModel.requestHasProgress(serviceAPI, fragment.fragmentManager!!, "", success,error,catch,complete,collect)
+            netWorkViewModel.requestHasProgress(serviceAPI, fragment.requireActivity().supportFragmentManager
+                , "", success,error,catch,complete,collect, onObserver)
         }
     }
 }

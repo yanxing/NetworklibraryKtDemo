@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yanxing.networklibrarykt.dialog.LoadDialog
 import com.yanxing.networklibrarykt.model.ResultModel
-import com.yanxing.networklibrarykt.util.isSuccess
+import com.yanxing.networklibrarykt.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -18,6 +18,8 @@ import java.lang.Exception
  */
 class RequestViewModel : ViewModel() {
 
+    private val TAG = "networklibrary"
+
     /**
      * 不带对话框的请求
      * @param serviceAPI 请求接口
@@ -27,9 +29,10 @@ class RequestViewModel : ViewModel() {
      * @param complete 请求完成
      * @param collect ResultModel<T>数据
      */
-    fun <T> request(serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T) -> Unit
-                    , error: suspend (message: String?) -> Unit, catch: suspend (message: String?) -> Unit
-                    , complete: suspend () -> Unit,collect:suspend (ResultModel:ResultModel<T>)->Unit) {
+    fun <T> request(serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T?) -> Unit
+                    , error: suspend (message: String) -> Unit, catch: suspend (message: String?) -> Unit
+                    , complete: suspend () -> Unit, collect:suspend (ResultModel:ResultModel<T>)->Unit
+                    , onObserver:((errorCode:String,errorMessage:String)->Unit)?) {
         viewModelScope.launch {
             flow {
                 emit(serviceAPI)
@@ -37,16 +40,22 @@ class RequestViewModel : ViewModel() {
                 .onCompletion {
                     complete.invoke()
                 }.catch {
+                    LogUtil.e(TAG,it.message?:"")
                     catch.invoke(it.message)
                 }.collect {
-                    val result = it.invoke()
-                    collect.invoke(result)
-                    //业务成功
-                    if (isSuccess(result.status) || isSuccess(result.code)) {
-                        result.data?.apply { success.invoke(this) }
-                    } else {
-                        val msg = if (TextUtils.isEmpty(result.msg)) result.message else result.msg
-                        error.invoke(msg)
+                    try {
+                        val result = it.invoke()
+                        collect.invoke(result)
+                        //业务成功
+                        if (isSuccess(result)) {
+                            success.invoke(getSuccessData(result))
+                        } else {
+                            onObserver?.invoke(getCode(result), getMessage(result))
+                            error.invoke(getMessage(result))
+                        }
+                    }catch (e:Exception){
+                        LogUtil.e(TAG,e.message?:"")
+                        catch.invoke(getException(e))
                     }
                 }
         }
@@ -62,9 +71,10 @@ class RequestViewModel : ViewModel() {
      * @param collect ResultModel<T>数据
      */
     fun <T> requestHasProgress(serviceAPI: suspend () -> ResultModel<T>, fragmentManager: FragmentManager, toast: String,
-                               success: suspend (data: T) -> Unit, error: suspend (message: String?) -> Unit
+                               success: suspend (data: T?) -> Unit, error: suspend (message: String) -> Unit
                                , catch: suspend (message: String?) -> Unit, complete: suspend () -> Unit
-                               ,collect:suspend (ResultModel:ResultModel<T>)->Unit) {
+                               , collect:suspend (ResultModel:ResultModel<T>)->Unit
+                               , onObserver:((errorCode:String,errorMessage:String)->Unit)?) {
         viewModelScope.launch {
             flow {
                 emit(serviceAPI)
@@ -94,6 +104,7 @@ class RequestViewModel : ViewModel() {
                     } catch (e: Exception) {
                     }
                 }.catch {
+                    LogUtil.e(TAG,it.message?:"")
                     catch.invoke(it.message)
                     try {
                         val fragment = fragmentManager.findFragmentByTag(LoadDialog.TAG)
@@ -104,14 +115,19 @@ class RequestViewModel : ViewModel() {
                     } catch (e: Exception) {
                     }
                 }.collect {
-                    val result = it.invoke()
-                    collect.invoke(result)
-                    //业务成功
-                    if (isSuccess(result.status) || isSuccess(result.code)) {
-                        result.data?.apply { success.invoke(this) }
-                    } else {
-                        val msg = if (TextUtils.isEmpty(result.msg)) result.message else result.msg
-                        error.invoke(msg)
+                    try {
+                        val result = it.invoke()
+                        collect.invoke(result)
+                        //业务成功
+                        if (isSuccess(result)) {
+                            success.invoke(getSuccessData(result))
+                        } else {
+                            onObserver?.invoke(getCode(result), getMessage(result))
+                            error.invoke(getMessage(result))
+                        }
+                    }catch (e:Exception){
+                        LogUtil.e(TAG,e.message?:"")
+                        catch.invoke(getException(e))
                     }
                 }
         }

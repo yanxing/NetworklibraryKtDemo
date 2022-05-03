@@ -10,7 +10,7 @@ import retrofit2.http.Path
 interface ServiceAPI {
 
     /**
-     * 获取天气
+     * 手机号密码登录
      */
     @GET("weather/current/{cityName}")
     suspend fun getWeather(@Path("cityName") cityName: String): ResultModel<Weather>

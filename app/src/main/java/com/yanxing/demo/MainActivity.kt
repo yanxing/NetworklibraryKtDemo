@@ -11,7 +11,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         val header = ArrayMap<String, String>()
         header["app_id"] = "oikqyppvlokrnkpq"
         header["app_secret"] = "YlpnRkR2TjhNRS9EU0ZKenFVNmllZz09"
-        RetrofitManage.init("https://www.mxnzp.com/api/",header, true)
+        RetrofitManage.init("https://www.mxnzp.com/api/",header, true,null)
     }
 
     override fun afterInstanceView() {

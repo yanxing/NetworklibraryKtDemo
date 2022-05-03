@@ -7,12 +7,12 @@ class ResultModel<T>(
     /**
      * 可能用的状态码1
      */
-    var status: String,
+    var status: String?,
     /**
      * 可能用的状态码2
      */
-    var code: String,
-    var message: String,
-    var msg: String,
+    var code: String?,
+    var message: String?,
+    var msg: String?,
     var data: T? = null
 )
