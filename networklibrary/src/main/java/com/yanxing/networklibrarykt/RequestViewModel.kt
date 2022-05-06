@@ -41,7 +41,7 @@ class RequestViewModel : ViewModel() {
                     complete.invoke()
                 }.catch {
                     LogUtil.e(TAG,it.message?:"")
-                    catch.invoke(it.message)
+                    catch.invoke(getException(it))
                 }.collect {
                     try {
                         val result = it.invoke()
@@ -105,7 +105,7 @@ class RequestViewModel : ViewModel() {
                     }
                 }.catch {
                     LogUtil.e(TAG,it.message?:"")
-                    catch.invoke(it.message)
+                    catch.invoke(getException(it))
                     try {
                         val fragment = fragmentManager.findFragmentByTag(LoadDialog.TAG)
                         fragment?.let {

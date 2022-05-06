@@ -113,20 +113,6 @@ object RetrofitManage {
         requestViewModel.request(serviceAPI,success,error,catch,complete,collect, onObserver)
     }
 
-    fun <T> request(fragmentActivity: FragmentActivity, serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T?) -> Unit
-                    , error: suspend (message: String) -> Unit={}, catch: suspend (message: String?) -> Unit={}
-                    , complete: suspend () -> Unit={}, collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
-        val requestViewModel = ViewModelProvider(fragmentActivity).get(RequestViewModel::class.java)
-        requestViewModel.request(serviceAPI,success,error,catch,complete,collect, onObserver)
-    }
-
-    fun <T> request(fragment: Fragment, serviceAPI: suspend () -> ResultModel<T>, success: suspend (data: T?) -> Unit
-                    , error: suspend (message: String) -> Unit={}, catch: suspend (message: String?) -> Unit={}
-                    , complete: suspend () -> Unit={}, collect:suspend (ResultModel:ResultModel<T>)->Unit={}) {
-        val requestViewModel = ViewModelProvider(fragment).get(RequestViewModel::class.java)
-        requestViewModel.request(serviceAPI,success,error,catch,complete,collect, onObserver)
-    }
-
     /**
      * 带对话框的请求
      * @param fragmentActivity
